@@ -1,4 +1,4 @@
-import { LocalStorageService } from "./local-storage";
+import { supabase } from '../lib/supabase';
 
 export interface Course {
   id: string;
@@ -24,11 +24,17 @@ export interface CourseDetail extends Course {
 }
 
 export class CoursesAPI {
-  // Get all courses
   static async getAllCourses(): Promise<{ data: Course[] | null; error: string | null }> {
     try {
-      const courses = LocalStorageService.getAllCourses();
-      const simpleCourses: Course[] = courses.map(course => ({
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const courses: Course[] = (data || []).map(course => ({
         id: course.id,
         name: course.name,
         level: course.level,
@@ -37,47 +43,63 @@ export class CoursesAPI {
         price: course.price,
         image: course.image,
         features: course.features,
-        isActive: course.isActive,
-        createdAt: course.createdAt
+        isActive: course.is_active,
+        createdAt: course.created_at
       }));
       
-      return { data: simpleCourses, error: null };
+      return { data: courses, error: null };
     } catch (error) {
       console.error('Error getting courses:', error);
       return { data: [], error: 'Failed to get courses' };
     }
   }
 
-  // Get course by ID
   static async getCourseById(courseId: string): Promise<{ data: CourseDetail | null; error: string | null }> {
     try {
-      const course = LocalStorageService.getCourseById(courseId);
-      return {
-        data: course,
-        error: course ? null : 'Course not found'
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', courseId)
+        .single();
+
+      if (error) throw error;
+      if (!data) return { data: null, error: 'Course not found' };
+
+      const course: CourseDetail = {
+        id: data.id,
+        name: data.name,
+        level: data.level,
+        description: data.description,
+        duration: data.duration,
+        price: data.price,
+        image: data.image,
+        features: data.features,
+        isActive: data.is_active,
+        createdAt: data.created_at,
+        syllabus: data.syllabus || [],
+        requirements: data.requirements || [],
+        outcomes: data.outcomes || []
       };
+
+      return { data: course, error: null };
     } catch (error) {
       console.error('Error getting course by ID:', error);
       return { data: null, error: 'Failed to get course' };
     }
   }
 
-  // Get featured courses
   static async getFeaturedCourses(): Promise<{ data: Course[] | null; error: string | null }> {
     try {
-      const featured = LocalStorageService.getFeaturedCourses();
-      return { data: featured, error: null };
-    } catch (error) {
-      console.error('Get featured courses error:', error);
-      return { data: null, error: error instanceof Error ? error.message : 'Failed to get featured courses' };
-    }
-  }
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
 
-  // Search courses
-  static async searchCourses(query: string, level?: string): Promise<{ data: Course[] | null; error: string | null }> {
-    try {
-      const courses = LocalStorageService.searchCourses(query, level);
-      const simpleCourses: Course[] = courses.map(course => ({
+      if (error) throw error;
+
+      const courses: Course[] = (data || []).map(course => ({
         id: course.id,
         name: course.name,
         level: course.level,
@@ -86,11 +108,50 @@ export class CoursesAPI {
         price: course.price,
         image: course.image,
         features: course.features,
-        isActive: course.isActive,
-        createdAt: course.createdAt
+        isActive: course.is_active,
+        createdAt: course.created_at
+      }));
+
+      return { data: courses, error: null };
+    } catch (error) {
+      console.error('Get featured courses error:', error);
+      return { data: null, error: error instanceof Error ? error.message : 'Failed to get featured courses' };
+    }
+  }
+
+  static async searchCourses(query: string, level?: string): Promise<{ data: Course[] | null; error: string | null }> {
+    try {
+      let queryBuilder = supabase
+        .from('courses')
+        .select('*')
+        .eq('is_active', true);
+
+      if (query) {
+        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+      }
+
+      if (level) {
+        queryBuilder = queryBuilder.eq('level', level);
+      }
+
+      const { data, error } = await queryBuilder.order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const courses: Course[] = (data || []).map(course => ({
+        id: course.id,
+        name: course.name,
+        level: course.level,
+        description: course.description,
+        duration: course.duration,
+        price: course.price,
+        image: course.image,
+        features: course.features,
+        isActive: course.is_active,
+        createdAt: course.created_at
       }));
       
-      return { data: simpleCourses, error: null };
+      return { data: courses, error: null };
     } catch (error) {
       console.error('Search courses error:', error);
       return { data: null, error: error instanceof Error ? error.message : 'Failed to search courses' };

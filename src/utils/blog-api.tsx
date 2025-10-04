@@ -1,4 +1,4 @@
-import { LocalStorageService } from "./local-storage";
+import { supabase } from '../lib/supabase';
 
 export interface BlogPost {
   id: string;
@@ -20,22 +20,35 @@ export interface BlogPost {
 }
 
 export class BlogAPI {
-  // Get all published blog posts
   static async getAllPosts(): Promise<{ data: BlogPost[] | null; error: string | null }> {
     try {
-      const posts = LocalStorageService.getAllBlogPosts();
-      const publishedPosts = posts.filter(post => post.isPublished);
-      return { data: publishedPosts, error: null };
-    } catch (error) {
-      console.error('Error getting blog posts:', error);
-      return { data: [], error: 'Failed to get blog posts' };
-    }
-  }
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
 
-  // Get all posts (including unpublished) - for admin
-  static async getAllPostsAdmin(): Promise<{ data: BlogPost[] | null; error: string | null }> {
-    try {
-      const posts = LocalStorageService.getAllBlogPosts();
+      if (error) throw error;
+
+      const posts: BlogPost[] = (data || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        image: post.image,
+        category: post.category,
+        tags: post.tags || [],
+        author: {
+          name: post.author_name,
+          avatar: post.author_avatar || undefined
+        },
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        isPublished: post.is_published,
+        views: post.views || 0
+      }));
+
       return { data: posts, error: null };
     } catch (error) {
       console.error('Error getting blog posts:', error);
@@ -43,17 +56,77 @@ export class BlogAPI {
     }
   }
 
-  // Get post by slug
+  static async getAllPostsAdmin(): Promise<{ data: BlogPost[] | null; error: string | null }> {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const posts: BlogPost[] = (data || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        image: post.image,
+        category: post.category,
+        tags: post.tags || [],
+        author: {
+          name: post.author_name,
+          avatar: post.author_avatar || undefined
+        },
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        isPublished: post.is_published,
+        views: post.views || 0
+      }));
+
+      return { data: posts, error: null };
+    } catch (error) {
+      console.error('Error getting blog posts:', error);
+      return { data: [], error: 'Failed to get blog posts' };
+    }
+  }
+
   static async getPostBySlug(slug: string): Promise<{ data: BlogPost | null; error: string | null }> {
     try {
-      const post = LocalStorageService.getBlogPostBySlug(slug);
-      if (!post || !post.isPublished) {
-        return { data: null, error: 'Post not found' };
-      }
-      
-      // Increment view count
-      LocalStorageService.incrementBlogViews(post.id);
-      
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single();
+
+      if (error) throw error;
+      if (!data) return { data: null, error: 'Post not found' };
+
+      await supabase
+        .from('blog_posts')
+        .update({ views: (data.views || 0) + 1 })
+        .eq('id', data.id);
+
+      const post: BlogPost = {
+        id: data.id,
+        title: data.title,
+        slug: data.slug,
+        excerpt: data.excerpt,
+        content: data.content,
+        image: data.image,
+        category: data.category,
+        tags: data.tags || [],
+        author: {
+          name: data.author_name,
+          avatar: data.author_avatar || undefined
+        },
+        publishedAt: data.published_at,
+        updatedAt: data.updated_at,
+        isPublished: data.is_published,
+        views: (data.views || 0) + 1
+      };
+
       return { data: post, error: null };
     } catch (error) {
       console.error('Error getting blog post:', error);
@@ -61,10 +134,36 @@ export class BlogAPI {
     }
   }
 
-  // Get posts by category
   static async getPostsByCategory(category: string): Promise<{ data: BlogPost[] | null; error: string | null }> {
     try {
-      const posts = LocalStorageService.getBlogPostsByCategory(category);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('category', category)
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+
+      const posts: BlogPost[] = (data || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        image: post.image,
+        category: post.category,
+        tags: post.tags || [],
+        author: {
+          name: post.author_name,
+          avatar: post.author_avatar || undefined
+        },
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        isPublished: post.is_published,
+        views: post.views || 0
+      }));
+
       return { data: posts, error: null };
     } catch (error) {
       console.error('Error getting posts by category:', error);
@@ -72,10 +171,36 @@ export class BlogAPI {
     }
   }
 
-  // Search posts
   static async searchPosts(query: string): Promise<{ data: BlogPost[] | null; error: string | null }> {
     try {
-      const posts = LocalStorageService.searchBlogPosts(query);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%,content.ilike.%${query}%`)
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+
+      const posts: BlogPost[] = (data || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        image: post.image,
+        category: post.category,
+        tags: post.tags || [],
+        author: {
+          name: post.author_name,
+          avatar: post.author_avatar || undefined
+        },
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        isPublished: post.is_published,
+        views: post.views || 0
+      }));
+
       return { data: posts, error: null };
     } catch (error) {
       console.error('Error searching posts:', error);
@@ -83,13 +208,36 @@ export class BlogAPI {
     }
   }
 
-  // Get featured posts (most viewed)
   static async getFeaturedPosts(limit: number = 3): Promise<{ data: BlogPost[] | null; error: string | null }> {
     try {
-      const posts = LocalStorageService.getAllBlogPosts()
-        .filter(post => post.isPublished)
-        .sort((a, b) => b.views - a.views)
-        .slice(0, limit);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('views', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      const posts: BlogPost[] = (data || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        image: post.image,
+        category: post.category,
+        tags: post.tags || [],
+        author: {
+          name: post.author_name,
+          avatar: post.author_avatar || undefined
+        },
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        isPublished: post.is_published,
+        views: post.views || 0
+      }));
+
       return { data: posts, error: null };
     } catch (error) {
       console.error('Error getting featured posts:', error);
@@ -97,13 +245,36 @@ export class BlogAPI {
     }
   }
 
-  // Get recent posts
   static async getRecentPosts(limit: number = 5): Promise<{ data: BlogPost[] | null; error: string | null }> {
     try {
-      const posts = LocalStorageService.getAllBlogPosts()
-        .filter(post => post.isPublished)
-        .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-        .slice(0, limit);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      const posts: BlogPost[] = (data || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        image: post.image,
+        category: post.category,
+        tags: post.tags || [],
+        author: {
+          name: post.author_name,
+          avatar: post.author_avatar || undefined
+        },
+        publishedAt: post.published_at,
+        updatedAt: post.updated_at,
+        isPublished: post.is_published,
+        views: post.views || 0
+      }));
+
       return { data: posts, error: null };
     } catch (error) {
       console.error('Error getting recent posts:', error);
@@ -111,10 +282,16 @@ export class BlogAPI {
     }
   }
 
-  // Get all categories
   static async getCategories(): Promise<{ data: string[] | null; error: string | null }> {
     try {
-      const categories = LocalStorageService.getBlogCategories();
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('category')
+        .eq('is_published', true);
+
+      if (error) throw error;
+
+      const categories = [...new Set((data || []).map(post => post.category))];
       return { data: categories, error: null };
     } catch (error) {
       console.error('Error getting categories:', error);
