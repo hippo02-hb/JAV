@@ -13,20 +13,11 @@ import { ContactPage } from "./pages/ContactPage";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { Toaster } from "./components/ui/sonner";
-import { LocalStorageService } from "./utils/local-storage";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(window.location.hash || '#/');
 
   useEffect(() => {
-    // Initialize LocalStorage with default data only if empty
-    LocalStorageService.initializeDefaultCourses();
-    LocalStorageService.initializeDefaultBlogPosts();
-    
-    // Debug: Log current data
-    console.log('Current courses in storage:', LocalStorageService.getAllCourses().length);
-    console.log('Current blog posts in storage:', LocalStorageService.getAllBlogPosts().length);
-    
     const handleHashChange = () => {
       setCurrentPage(window.location.hash || '#/');
     };
