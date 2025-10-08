@@ -2,10 +2,16 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Award, Briefcase, GraduationCap } from "lucide-react";
 
+// Import images directly for Vite to handle
+import trieuImg from "../public/BOD/trieu.png";
+import tanImg from "../public/BOD/tan.png";
+import vyImg from "../public/BOD/vy.png";
+
 export function Teachers() {
   const teachers = [
     {
       name: "Nguyễn Quang Triệu",
+      src: trieuImg,
       role: "Giám đốc chương trình, Giáo viên",
       jlpt: "N2",
       experience: "6 năm kinh nghiệm giảng dạy",
@@ -20,6 +26,7 @@ export function Teachers() {
     {
       name: "Lê Đình Tân",
       role: "Giáo viên",
+      src: tanImg,
       jlpt: "N2",
       experience: "2 năm kinh nghiệm giảng dạy",
       training: "Đã được đào tạo Nghiệp vụ dạy tiếng Nhật chuyên nghiệp",
@@ -31,6 +38,7 @@ export function Teachers() {
     {
       name: "Phạm Thùy Tường Vy",
       role: "Trợ giảng",
+      src: vyImg,
       jlpt: "N5",
       experience: "1 năm kinh nghiệm giảng dạy",
       training: "Đã được đào tạo Nghiệp vụ dạy tiếng Nhật chuyên nghiệp",
@@ -59,10 +67,11 @@ export function Teachers() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {teachers.map((teacher, index) => (
             <Card key={index} className="p-6 hover:shadow-xl transition-shadow">
-              {/* Avatar placeholder */}
-              <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-brand-navy to-brand-navy/80 rounded-full flex items-center justify-center">
-                <span className="text-3xl text-white">{teacher.name.charAt(0)}</span>
-              </div>
+              <img 
+                src={teacher.src}
+                alt={teacher.name}
+                className="w-24 h-24 mx-auto mb-4 rounded-full object-cover"
+              />
 
               <div className="text-center mb-4">
                 <h3 className="mb-1">{teacher.name}</h3>
