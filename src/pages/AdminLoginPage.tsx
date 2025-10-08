@@ -77,14 +77,7 @@ export function AdminLoginPage() {
             <p className="text-gray-600 mt-2">Đăng nhập để quản lý hệ thống</p>
           </div>
 
-          {/* Demo credentials info */}
-          <Alert className="mb-6 bg-blue-50 border-blue-200">
-            <AlertDescription className="text-blue-800">
-              <strong>Tài khoản Demo:</strong><br />
-              Email: admin@tnqdo.com<br />
-              Mật khẩu: admin123
-            </AlertDescription>
-          </Alert>
+          
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">

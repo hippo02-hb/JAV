@@ -67,10 +67,7 @@ export function Header() {
             <button onClick={() => navigate('#/faq')} className={`hover:text-brand-navy transition-colors ${isActive('#/faq')}`}>
               Hỏi đáp
             </button>
-            <Button onClick={handleAdminAccess} variant="outline" size="sm" className="border-brand-navy/20 text-brand-navy hover:bg-brand-lavender/10">
-              <Settings className="w-4 h-4 mr-2" />
-              Admin
-            </Button>
+            
           </nav>
 
           {/* Mobile Menu Button */}
