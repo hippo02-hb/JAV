@@ -38,21 +38,22 @@ interface SyllabusItem {
   content: string[];
 }
 
-export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
-  const [formData, setFormData] = useState<Partial<CourseDetail>>({
-    name: '',
-    level: 'N5',
-    description: '',
-    duration: '',
-    price: 0,
-    image: '',
-    features: [],
-    isActive: true,
-    syllabus: [],
-    requirements: [],
-    outcomes: []
-  });
+const INITIAL_STATE: Partial<CourseDetail> = {
+  name: '',
+  level: 'N5',
+  description: '',
+  duration: '',
+  price: 0,
+  image: '',
+  features: [],
+  isActive: true,
+  syllabus: [],
+  requirements: [],
+  outcomes: []
+};
 
+export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
+  const [formData, setFormData] = useState<Partial<CourseDetail>>(INITIAL_STATE);
   const [newFeature, setNewFeature] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
@@ -66,10 +67,12 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
     if (course) {
       setFormData({
         ...course,
-        syllabus: [],
-        requirements: [],
-        outcomes: []
+        syllabus: course.syllabus || [],
+        requirements: course.requirements || [],
+        outcomes: course.outcomes || [],
       });
+    } else {
+      setFormData(INITIAL_STATE);
     }
   }, [course]);
 

@@ -12,13 +12,17 @@ import { FAQPage } from "./pages/FAQPage";
 import { ContactPage } from "./pages/ContactPage";
 import { AdminPage } from "./pages/AdminPage";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
+import { CheckoutPage } from "./pages/CheckoutPage";
 import { Toaster } from "./components/ui/sonner";
+import { Button } from "./components/ui/button";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(window.location.hash || '#/');
 
   useEffect(() => {
+    console.log("App.tsx: Initializing with page:", window.location.hash);
     const handleHashChange = () => {
+      console.log("App.tsx: Hash changed to:", window.location.hash);
       setCurrentPage(window.location.hash || '#/');
     };
 
@@ -27,42 +31,59 @@ export default function App() {
   }, []);
 
   const renderPage = () => {
-    // Handle course detail page
-    if (currentPage.startsWith('#/courses/')) {
-      const courseId = currentPage.split('/')[2];
-      return <CourseDetailPage courseId={courseId} />;
-    }
+    console.log(`App.tsx: Rendering page for route: ${currentPage}`);
+    try {
+      if (currentPage.startsWith('#/checkout/')) {
+        const parts = currentPage.split('/');
+        const courseId = parts[2];
+        console.log(`App.tsx: Matched /checkout/, Course ID: ${courseId}`);
+        if (!courseId) return <div>Lỗi: ID Khóa học không tồn tại.</div>;
+        return <CheckoutPage courseId={courseId} />;
+      }
 
-    // Handle blog detail page
-    if (currentPage.startsWith('#/blog/')) {
-      const slug = currentPage.split('/')[2];
-      return <BlogDetailPage slug={slug} />;
-    }
+      if (currentPage.startsWith('#/courses/')) {
+        const parts = currentPage.split('/');
+        const courseId = parts[2];
+        console.log(`App.tsx: Matched /courses/, Course ID: ${courseId}`);
+        if (!courseId) return <div>Lỗi: ID Khóa học không tồn tại.</div>;
+        return <CourseDetailPage courseId={courseId} />;
+      }
 
-    switch (currentPage) {
-      case '#/about':
-        return <AboutPage />;
-      case '#/courses':
-        return <CoursesPage />;
-      case '#/blog':
-        return <BlogPage />;
-      case '#/teachers':
-        return <TeachersPage />;
-      case '#/faq':
-        return <FAQPage />;
-      case '#/contact':
-        return <ContactPage />;
-      case '#/admin':
-        return <AdminPage />;
-      case '#/admin/login':
-        return <AdminLoginPage />;
-      default:
-        return <Home />;
+      if (currentPage.startsWith('#/blog/')) {
+        const parts = currentPage.split('/');
+        const slug = parts[2];
+        console.log(`App.tsx: Matched /blog/, Slug: ${slug}`);
+        if (!slug) return <div>Lỗi: Slug bài viết không tồn tại.</div>;
+        return <BlogDetailPage slug={slug} />;
+      }
+
+      switch (currentPage) {
+        case '#/about': return <AboutPage />;
+        case '#/courses': return <CoursesPage />;
+        case '#/blog': return <BlogPage />;
+        case '#/teachers': return <TeachersPage />;
+        case '#/faq': return <FAQPage />;
+        case '#/contact': return <ContactPage />;
+        case '#/admin': return <AdminPage />;
+        case '#/admin/login': return <AdminLoginPage />;
+        case '#/': return <Home />;
+        default: 
+          console.log(`App.tsx: No route matched. Defaulting to Home.`);
+          return <Home />;
+      }
+    } catch (error) {
+        console.error("App.tsx: A critical error occurred during page rendering:", error);
+        return (
+            <div className="text-center p-8">
+                <h1 className="text-2xl font-bold text-red-600 mb-4">Đã xảy ra lỗi nghiêm trọng</h1>
+                <p className="mb-4">Ứng dụng không thể hiển thị trang này. Vui lòng thử lại sau.</p>
+                <Button onClick={() => window.location.hash = '#/'}>Về trang chủ</Button>
+            </div>
+        );
     }
   };
 
   const showFooter = !['#/admin', '#/admin/login'].includes(currentPage);
-
   const showHeader = !['#/admin', '#/admin/login'].includes(currentPage);
 
   return (

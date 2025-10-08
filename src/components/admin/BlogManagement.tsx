@@ -57,8 +57,10 @@ export function BlogManagement({ onBlogChange }: BlogManagementProps) {
   const loadPosts = async () => {
     setLoading(true);
     try {
-      const { data } = await BlogAdminAPI.getAllPosts();
-      if (data) {
+      const { data, error } = await BlogAdminAPI.getPosts(); // CORRECTED: Was getAllPosts
+      if (error) {
+        toast.error('Lỗi khi tải danh sách bài viết: ' + error);
+      } else if (data) {
         setPosts(data);
       }
     } catch (error) {
@@ -83,9 +85,9 @@ export function BlogManagement({ onBlogChange }: BlogManagementProps) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(post =>
         post.title.toLowerCase().includes(query) ||
-        post.excerpt.toLowerCase().includes(query) ||
-        post.category.toLowerCase().includes(query) ||
-        post.tags.some(tag => tag.toLowerCase().includes(query))
+        (post.excerpt && post.excerpt.toLowerCase().includes(query)) ||
+        (post.category && post.category.toLowerCase().includes(query)) ||
+        (post.tags && post.tags.some(tag => tag.toLowerCase().includes(query)))
       );
     }
 
@@ -109,9 +111,9 @@ export function BlogManagement({ onBlogChange }: BlogManagementProps) {
 
     try {
       const result = await BlogAdminAPI.deletePost(postId);
-      if (result.success) {
+      if (!result.error) { // CORRECTED: Was result.success
         toast.success('Xóa bài viết thành công');
-        onBlogChange();
+        // The event listener will call loadPosts()
       } else {
         toast.error(result.error || 'Lỗi khi xóa bài viết');
       }
@@ -146,7 +148,7 @@ export function BlogManagement({ onBlogChange }: BlogManagementProps) {
       
       setShowForm(false);
       setEditingPost(null);
-      onBlogChange();
+      // The event listener will call loadPosts() and onBlogChange()
     } catch (error) {
       toast.error('Lỗi khi lưu bài viết');
     }
@@ -158,6 +160,7 @@ export function BlogManagement({ onBlogChange }: BlogManagementProps) {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: 'short',
@@ -327,7 +330,7 @@ export function BlogManagement({ onBlogChange }: BlogManagementProps) {
                       </div>
                     </div>
                     
-                    {post.tags.length > 0 && (
+                    {post.tags && post.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {post.tags.slice(0, 3).map((tag, idx) => (
                           <Badge key={idx} variant="secondary" className="text-xs">

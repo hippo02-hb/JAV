@@ -43,11 +43,10 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
     }).format(price);
   };
 
-  const handleContactForCourse = () => {
-    const message = `Xin chào! Tôi muốn đăng ký khóa học "${course?.name}". Vui lòng tư vấn cho tôi.`;
-    const phoneNumber = '84901189399';
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+  const handleGoToCheckout = () => {
+    if (course) {
+      window.location.hash = `#/checkout/${course.id}`;
+    }
   };
 
   if (loading) {
@@ -135,7 +134,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
                 <Button 
                   size="lg"
                   className="bg-brand-lavender text-brand-navy hover:bg-brand-lavender/90"
-                  onClick={handleContactForCourse}
+                  onClick={handleGoToCheckout}
                 >
                   Đăng ký ngay
                 </Button>
@@ -271,7 +270,7 @@ export function CourseDetailPage({ courseId }: CourseDetailPageProps) {
                   <Button 
                     className="w-full bg-brand-navy hover:bg-brand-navy/90 mb-4"
                     size="lg"
-                    onClick={handleContactForCourse}
+                    onClick={handleGoToCheckout}
                   >
                     Đăng ký ngay
                   </Button>

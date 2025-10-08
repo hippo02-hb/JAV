@@ -107,13 +107,6 @@ export function BlogForm({ blog, onSubmit, onCancel }: BlogFormProps) {
     }));
   };
 
-  const handleImageSelected = (imageUrl: string) => {
-    setFormData(prev => ({
-      ...prev,
-      image: imageUrl
-    }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -258,8 +251,8 @@ export function BlogForm({ blog, onSubmit, onCancel }: BlogFormProps) {
                 <div className="space-y-2">
                   <Label>Ảnh đại diện</Label>
                   <ImageUpload
-                    onImageSelected={handleImageSelected}
-                    currentImage={formData.image}
+                    value={formData.image}
+                    onChange={(url) => handleInputChange('image', url)}
                   />
                 </div>
 
