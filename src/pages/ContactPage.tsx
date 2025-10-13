@@ -7,6 +7,8 @@ export function ContactPage() {
     { day: "Thứ 2 - Thứ 6", time: "8:00 - 20:00" },
     { day: "Thứ 7 - Chủ nhật", time: "9:00 - 18:00" }
   ];
+  
+  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.163397943485!2d106.6225247152019!3d10.78359959231438!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752c033ddd4697%3A0xb6b9dd2506df4c36!2zMkIgxJAuIEhvw6BuZyBOZ-G7jWMgUGjDoWNoLCBQaMO6IFRo4buNIEhvw6AsIFTDom4gUGjDuiwgSOG7kyBDaMOtIE1pbmggNzAwMDAwLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1628842602051!5m2!1svi!2s";
 
   return (
     <div className="pt-16">
@@ -80,22 +82,22 @@ export function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Map Placeholder */}
-              <Card className="p-6">
-                <h3 className="mb-4">Vị Trí</h3>
-                <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <MapPin className="w-12 h-12 mx-auto mb-2" />
-                    <p className="text-sm">
-                      2B Hoàng Ngọc Phách<br />
-                      P. Phú Thọ Hòa, Q. Tân Phú<br />
-                      TP. Hồ Chí Minh
-                    </p>
-                  </div>
+              {/* Map Section */}
+              <Card className="p-6 overflow-hidden">
+                <h3 className="mb-4">Vị Trí Của Chúng Tôi</h3>
+                <div className="aspect-w-16 aspect-h-9 bg-gray-200 rounded-lg overflow-hidden">
+                   <iframe 
+                    src={mapEmbedUrl}
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen={true} 
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
                 </div>
-                <p className="text-sm text-muted-foreground mt-4">
-                  Hiện tại TNQDO hoạt động 100% trực tuyến. Chúng tôi dự định sẽ mở trung tâm 
-                  học offline trong tương lai gần khi có đủ nhu cầu từ học viên.
+                 <p className="text-sm text-muted-foreground mt-4">
+                  <strong>Địa chỉ:</strong> 2B Hoàng Ngọc Phách, P. Phú Thọ Hòa, Q. Tân Phú, TP. Hồ Chí Minh
                 </p>
               </Card>
 
