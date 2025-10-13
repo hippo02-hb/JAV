@@ -107,31 +107,35 @@ export function BlogForm({ blog, onSubmit, onCancel }: BlogFormProps) {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
+
+    // Basic validation
     if (!formData.title?.trim()) {
       toast.error('Vui lòng nhập tiêu đề bài viết');
       return;
     }
-    
     if (!formData.slug?.trim()) {
       toast.error('Vui lòng nhập slug bài viết');
       return;
     }
-    
     if (!formData.excerpt?.trim()) {
       toast.error('Vui lòng nhập mô tả ngắn');
       return;
     }
-    
     if (!formData.content?.trim()) {
       toast.error('Vui lòng nhập nội dung bài viết');
       return;
     }
 
-    onSubmit(formData);
+    // Prepare form data for submission
+    const dataToSubmit = {
+      ...formData,
+      // Replace newlines with <br> tags for multiline display
+      content: formData.content.replace(/\n/g, '<br />'),
+    };
+
+    onSubmit(dataToSubmit);
   };
 
   const commonCategories = [

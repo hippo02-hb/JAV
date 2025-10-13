@@ -22,7 +22,8 @@ import {
   Tag,
   FileText,
   Target,
-  CheckSquare
+  CheckSquare,
+  GripVertical
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 
@@ -57,11 +58,6 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
   const [newFeature, setNewFeature] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
   const [newOutcome, setNewOutcome] = useState('');
-  const [newSyllabusItem, setNewSyllabusItem] = useState<SyllabusItem>({
-    week: 1,
-    topic: '',
-    content: ['']
-  });
 
   useEffect(() => {
     if (course) {
@@ -82,99 +78,66 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
       [field]: value
     }));
   };
-
-  const handleAddFeature = () => {
-    if (newFeature.trim()) {
+  
+  // --- Generic List Handlers ---
+  const handleAddItem = (field: 'features' | 'requirements' | 'outcomes', value: string, setter: (v: string) => void) => {
+    if (value.trim()) {
       setFormData(prev => ({
         ...prev,
-        features: [...(prev.features || []), newFeature.trim()]
+        [field]: [...(prev[field] || []), value.trim()]
       }));
-      setNewFeature('');
+      setter('');
     }
   };
 
-  const handleRemoveFeature = (index: number) => {
+  const handleRemoveItem = (field: 'features' | 'requirements' | 'outcomes', index: number) => {
     setFormData(prev => ({
       ...prev,
-      features: prev.features?.filter((_, i) => i !== index) || []
+      [field]: prev[field]?.filter((_, i) => i !== index) || []
     }));
   };
 
-  const handleAddRequirement = () => {
-    if (newRequirement.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        requirements: [...(prev.requirements || []), newRequirement.trim()]
-      }));
-      setNewRequirement('');
-    }
+  // --- Syllabus Handlers ---
+  const handleSyllabusChange = (index: number, field: keyof SyllabusItem, value: any) => {
+    const updatedSyllabus = [...(formData.syllabus || [])];
+    updatedSyllabus[index] = { ...updatedSyllabus[index], [field]: value };
+    handleInputChange('syllabus', updatedSyllabus);
+  };
+  
+  const handleSyllabusContentChange = (syllabusIndex: number, contentIndex: number, value: string) => {
+    const updatedSyllabus = [...(formData.syllabus || [])];
+    const updatedContent = [...updatedSyllabus[syllabusIndex].content];
+    updatedContent[contentIndex] = value;
+    updatedSyllabus[syllabusIndex] = { ...updatedSyllabus[syllabusIndex], content: updatedContent };
+    handleInputChange('syllabus', updatedSyllabus);
   };
 
-  const handleRemoveRequirement = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: prev.requirements?.filter((_, i) => i !== index) || []
-    }));
+  const addSyllabusContentItem = (syllabusIndex: number) => {
+    const updatedSyllabus = [...(formData.syllabus || [])];
+    updatedSyllabus[syllabusIndex].content.push('');
+    handleInputChange('syllabus', updatedSyllabus);
+  };
+  
+  const removeSyllabusContentItem = (syllabusIndex: number, contentIndex: number) => {
+    const updatedSyllabus = [...(formData.syllabus || [])];
+    const updatedContent = updatedSyllabus[syllabusIndex].content.filter((_, i) => i !== contentIndex);
+    updatedSyllabus[syllabusIndex] = { ...updatedSyllabus[syllabusIndex], content: updatedContent };
+    handleInputChange('syllabus', updatedSyllabus);
   };
 
-  const handleAddOutcome = () => {
-    if (newOutcome.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        outcomes: [...(prev.outcomes || []), newOutcome.trim()]
-      }));
-      setNewOutcome('');
-    }
+  const addSyllabusItem = () => {
+    const newWeekNumber = (formData.syllabus?.length || 0) + 1;
+    const newItem: SyllabusItem = { week: newWeekNumber, topic: '', content: [''] };
+    handleInputChange('syllabus', [...(formData.syllabus || []), newItem]);
   };
 
-  const handleRemoveOutcome = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      outcomes: prev.outcomes?.filter((_, i) => i !== index) || []
-    }));
+  const removeSyllabusItem = (index: number) => {
+    const updatedSyllabus = (formData.syllabus || []).filter((_, i) => i !== index);
+    // Re-assign week numbers
+    const renumberedSyllabus = updatedSyllabus.map((item, i) => ({ ...item, week: i + 1 }));
+    handleInputChange('syllabus', renumberedSyllabus);
   };
 
-  const handleAddSyllabusItem = () => {
-    if (newSyllabusItem.topic.trim() && newSyllabusItem.content[0].trim()) {
-      setFormData(prev => ({
-        ...prev,
-        syllabus: [...(prev.syllabus || []), { ...newSyllabusItem }]
-      }));
-      setNewSyllabusItem({
-        week: (formData.syllabus?.length || 0) + 2,
-        topic: '',
-        content: ['']
-      });
-    }
-  };
-
-  const handleRemoveSyllabusItem = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      syllabus: prev.syllabus?.filter((_, i) => i !== index) || []
-    }));
-  };
-
-  const handleSyllabusContentChange = (contentIndex: number, value: string) => {
-    setNewSyllabusItem(prev => ({
-      ...prev,
-      content: prev.content.map((item, i) => i === contentIndex ? value : item)
-    }));
-  };
-
-  const handleAddSyllabusContent = () => {
-    setNewSyllabusItem(prev => ({
-      ...prev,
-      content: [...prev.content, '']
-    }));
-  };
-
-  const handleRemoveSyllabusContent = (index: number) => {
-    setNewSyllabusItem(prev => ({
-      ...prev,
-      content: prev.content.filter((_, i) => i !== index)
-    }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -320,10 +283,10 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
                 <Input
                   value={newFeature}
                   onChange={(e) => setNewFeature(e.target.value)}
-                  placeholder="Nhập tính năng mới..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                  placeholder="Nhập tính năng mới và nhấn Enter"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddItem('features', newFeature, setNewFeature))}
                 />
-                <Button type="button" onClick={handleAddFeature}>
+                <Button type="button" onClick={() => handleAddItem('features', newFeature, setNewFeature)}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -334,7 +297,7 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
                     {feature}
                     <button
                       type="button"
-                      onClick={() => handleRemoveFeature(index)}
+                      onClick={() => handleRemoveItem('features', index)}
                       className="text-brand-rose hover:text-brand-rose/80"
                     >
                       <X className="h-3 w-3" />
@@ -348,94 +311,97 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
 
         <TabsContent value="syllabus" className="space-y-6">
           <Card className="p-6">
-            <div className="flex items-center space-x-2 mb-4">
-              <FileText className="h-5 w-5 text-brand-navy" />
-              <h3 className="text-lg font-semibold">Chương trình học</h3>
-            </div>
-
-            {/* Add new syllabus item */}
-            <div className="space-y-4 p-4 bg-gray-50 rounded-lg mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Tuần</Label>
-                  <Input
-                    type="number"
-                    value={newSyllabusItem.week}
-                    onChange={(e) => setNewSyllabusItem(prev => ({ ...prev, week: parseInt(e.target.value) || 1 }))}
-                    min="1"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Chủ đề</Label>
-                  <Input
-                    value={newSyllabusItem.topic}
-                    onChange={(e) => setNewSyllabusItem(prev => ({ ...prev, topic: e.target.value }))}
-                    placeholder="Ví dụ: Hiragana & Chào hỏi"
-                  />
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-brand-navy" />
+                <h3 className="text-lg font-semibold">Chương trình học</h3>
               </div>
-
-              <div className="space-y-2">
-                <Label>Nội dung</Label>
-                {newSyllabusItem.content.map((content, index) => (
-                  <div key={index} className="flex space-x-2">
-                    <Input
-                      value={content}
-                      onChange={(e) => handleSyllabusContentChange(index, e.target.value)}
-                      placeholder="Nội dung học..."
-                    />
-                    {newSyllabusItem.content.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRemoveSyllabusContent(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddSyllabusContent}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Thêm nội dung
-                </Button>
-              </div>
-
-              <Button type="button" onClick={handleAddSyllabusItem}>
+              <Button type="button" size="sm" onClick={addSyllabusItem}>
                 <Plus className="h-4 w-4 mr-2" />
-                Thêm tuần học
+                Thêm Tuần
               </Button>
             </div>
-
-            {/* Existing syllabus items */}
+            
             <div className="space-y-4">
-              {formData.syllabus?.map((item, index) => (
-                <Card key={index} className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">Tuần {item.week}: {item.topic}</h4>
+              {(formData.syllabus || []).map((item, index) => (
+                <Card key={index} className="p-4 bg-gray-50/50">
+                  <div className="flex items-start gap-4">
+                    {/* Drag Handle - Future Feature
+                    <div className="cursor-move pt-2">
+                      <GripVertical className="h-5 w-5 text-gray-400" />
+                    </div>
+                    */}
+                    <div className="flex-1 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Tuần</Label>
+                          <Input
+                            type="number"
+                            value={item.week}
+                            onChange={(e) => handleSyllabusChange(index, 'week', parseInt(e.target.value) || 1)}
+                            min="1"
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>Chủ đề</Label>
+                          <Input
+                            value={item.topic}
+                            onChange={(e) => handleSyllabusChange(index, 'topic', e.target.value)}
+                            placeholder="Ví dụ: Hiragana & Chào hỏi"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Nội dung</Label>
+                        {item.content.map((contentItem, contentIndex) => (
+                          <div key={contentIndex} className="flex space-x-2">
+                            <Input
+                              value={contentItem}
+                              onChange={(e) => handleSyllabusContentChange(index, contentIndex, e.target.value)}
+                              placeholder="Nội dung chi tiết..."
+                            />
+                            {item.content.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeSyllabusContentItem(index, contentIndex)}
+                              >
+                                <Trash2 className="h-4 w-4 text-gray-500" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSyllabusContentItem(index)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Thêm Nội dung
+                        </Button>
+                      </div>
+                    </div>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveSyllabusItem(index)}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeSyllabusItem(index)}
                       className="text-brand-rose hover:text-brand-rose/80"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    {item.content.map((content, contentIndex) => (
-                      <li key={contentIndex}>• {content}</li>
-                    ))}
-                  </ul>
                 </Card>
               ))}
+              {(!formData.syllabus || formData.syllabus.length === 0) && (
+                <div className="text-center py-10 border-2 border-dashed rounded-lg">
+                  <p className="text-gray-500">Chưa có tuần học nào.</p>
+                  <p className="text-sm text-gray-400">Nhấn "Thêm Tuần" để bắt đầu xây dựng chương trình học.</p>
+                </div>
+              )}
             </div>
           </Card>
         </TabsContent>
@@ -448,29 +414,27 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
                 <CheckSquare className="h-5 w-5 text-brand-navy" />
                 <h3 className="text-lg font-semibold">Yêu cầu tham gia</h3>
               </div>
-
               <div className="space-y-4">
                 <div className="flex space-x-2">
                   <Input
                     value={newRequirement}
                     onChange={(e) => setNewRequirement(e.target.value)}
-                    placeholder="Nhập yêu cầu..."
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddRequirement()}
+                    placeholder="Nhập yêu cầu mới và nhấn Enter"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddItem('requirements', newRequirement, setNewRequirement))}
                   />
-                  <Button type="button" onClick={handleAddRequirement}>
+                  <Button type="button" onClick={() => handleAddItem('requirements', newRequirement, setNewRequirement)}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-
                 <div className="space-y-2">
-                  {formData.requirements?.map((requirement, index) => (
+                  {formData.requirements?.map((item, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm">{requirement}</span>
+                      <span className="text-sm">{item}</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRemoveRequirement(index)}
+                        onClick={() => handleRemoveItem('requirements', index)}
                         className="text-brand-rose hover:text-brand-rose/80"
                       >
                         <X className="h-4 w-4" />
@@ -487,29 +451,27 @@ export function CourseForm({ course, onSubmit, onCancel }: CourseFormProps) {
                 <Target className="h-5 w-5 text-brand-navy" />
                 <h3 className="text-lg font-semibold">Mục tiêu đạt được</h3>
               </div>
-
               <div className="space-y-4">
                 <div className="flex space-x-2">
                   <Input
                     value={newOutcome}
                     onChange={(e) => setNewOutcome(e.target.value)}
-                    placeholder="Nhập mục tiêu..."
-                    onKeyPress={(e) => e.key === 'Enter' && handleAddOutcome()}
+                    placeholder="Nhập mục tiêu mới và nhấn Enter"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddItem('outcomes', newOutcome, setNewOutcome))}
                   />
-                  <Button type="button" onClick={handleAddOutcome}>
+                  <Button type="button" onClick={() => handleAddItem('outcomes', newOutcome, setNewOutcome)}>
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-
                 <div className="space-y-2">
-                  {formData.outcomes?.map((outcome, index) => (
+                  {formData.outcomes?.map((item, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm">{outcome}</span>
+                      <span className="text-sm">{item}</span>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRemoveOutcome(index)}
+                        onClick={() => handleRemoveItem('outcomes', index)}
                         className="text-brand-rose hover:text-brand-rose/80"
                       >
                         <X className="h-4 w-4" />

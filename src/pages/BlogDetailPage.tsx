@@ -172,7 +172,7 @@ export function BlogDetailPage({ slug }: BlogDetailPageProps) {
 
               {/* Content */}
               <div 
-                className="prose prose-lg max-w-none"
+                className="prose prose-lg max-w-none whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
