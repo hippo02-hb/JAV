@@ -116,7 +116,7 @@ export function FeaturedCourses() {
           {/* Courses Grid */}
           <div className="grid lg:grid-cols-3 gap-8">
             {courses.map((course, index) => {
-              const { color, icon: IconComponent } = getLevelStyle(course.level);
+              const { icon: IconComponent } = getLevelStyle(course.level);
               const mockStudents = Math.floor(Math.random() * 1000) + 500; // Mock student count
               const mockRating = (Math.random() * 0.5 + 4.5).toFixed(1); // Mock rating 4.5-5.0
               
@@ -131,11 +131,11 @@ export function FeaturedCourses() {
                 >
                   <Card className="h-full group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden">
                     {/* Course Header */}
-                    <div className={`h-2 bg-gradient-to-r ${color}`} />
+                    <div className={`h-2 bg-gradient-to-r from-brand-navy to-brand-lavender`} />
                     
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between mb-3">
-                        <div className={`w-12 h-12 bg-gradient-to-r ${color} rounded-lg flex items-center justify-center`}>
+                        <div className={`w-12 h-12 bg-gradient-to-r from-brand-navy to-brand-lavender rounded-lg flex items-center justify-center`}>
                           <IconComponent className="w-6 h-6 text-white" />
                         </div>
                         <Badge variant="secondary" className="bg-gray-100">
@@ -195,10 +195,10 @@ export function FeaturedCourses() {
                         </div>
 
                         <Button 
-                          className="w-full bg-gradient-to-r from-brand-navy to-brand-navy/80 hover:from-brand-navy/90 hover:to-brand-navy group"
+                          className="w-full bg-gradient-to-r from-brand-navy to-brand-lavender hover:from-brand-navy/90 hover:to-brand-lavender/90 group"
                           onClick={() => window.location.hash = `#/courses/${course.id}`}
                         >
-                          Xem chi tiết
+                          <span className="z-10 relative">Xem chi tiết</span>
                           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                         </Button>
                       </div>

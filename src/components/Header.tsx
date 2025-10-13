@@ -41,7 +41,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button onClick={() => navigate('#/')} className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-brand-navy to-brand-navy/80 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-brand-navy to-brand-lavender rounded-lg flex items-center justify-center">
               <span className="text-white">日</span>
             </div>
             <div>
@@ -113,7 +113,7 @@ export function Header() {
               Hỏi đáp
             </button>
             <div className="px-4">
-              <Button onClick={handleAdminAccess} className="w-full bg-brand-navy hover:bg-brand-navy/90">
+              <Button onClick={handleAdminAccess} className="w-full bg-gradient-to-r from-brand-navy to-brand-lavender hover:from-brand-navy/90 hover:to-brand-lavender/90">
                 <Settings className="w-4 h-4 mr-2" />
                 Admin
               </Button>

@@ -2,7 +2,7 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
+  --background: #f5f5f5;
   --foreground: #1b2460;
   --card: #ffffff;
   --card-foreground: #1b2460;
@@ -14,7 +14,7 @@
   --secondary-foreground: #1b2460;
   --muted: #f5f5f5;
   --muted-foreground: #6b7280;
-  --accent: #d1d7fe;
+  --accent: #00ba00;
   --accent-foreground: #1b2460;
   --destructive: #d98f8f;
   --destructive-foreground: #1b2460;

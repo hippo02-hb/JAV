@@ -26,7 +26,7 @@ export function Hero() {
             className="w-full h-full object-cover"
           />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-brand-navy/40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy/90 to-brand-lavender/50" />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/30 to-transparent" />
       </div>
 
